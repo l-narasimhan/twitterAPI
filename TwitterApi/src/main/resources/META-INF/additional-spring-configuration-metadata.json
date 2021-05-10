@@ -1,0 +1,33 @@
+{
+  "properties": [
+    {
+      "name": "port",
+      "type": "java.lang.String",
+      "description": "Description for port."
+    },
+    {
+      "name": "server",
+      "type": "java.lang.String",
+      "description": "Description for server."
+    },
+    {
+      "name": "application.name",
+      "type": "java.lang.String",
+      "description": "Description for application.name."
+    },
+    {
+      "name": "spring",
+      "type": "java.lang.String",
+      "description": "Description for spring."
+    },
+    {
+      "name": "management.security.enabled",
+      "type": "java.lang.String",
+      "description": "Description for management.security.enabled."
+    },
+    {
+      "name": "spring.application.name.datasource.username",
+      "type": "java.lang.String",
+      "description": "Description for spring.application.name.datasource.username."
+    }
+  ] }

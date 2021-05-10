@@ -1,0 +1,64 @@
+server:
+  port: ${SERVER_PORT}
+  servlet:
+    context-path: /tweetsvcs
+spring:
+  application.name: twitter-core
+  jpa:
+    properties:
+      hibernate:
+        generate_statistics: true
+  datasource:
+    #url: jdbc:postgresql://localhost:5555/twitter_postgres
+    url: jdbc:postgresql://172.21.0.2/twitter_postgres
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      #connection-test-query: select 1 from dual
+      pool-name: TransactionsAPIHikariCP
+      minimum-idle: 50
+      maximum-pool-size: 100
+      auto-commit: true
+  autoconfigure:
+      exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+  security:
+      user:
+        name: user
+        password: user
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+  security:
+    basic:
+     enabled: false
+        #ignored: /**
+
+
+    #driver-class-name: oracle.jdbc.OracleDriver
+    #url: jdbc:oracle:thin:@localhost:1521/xe
+    #      url: jdbc:oracle:thin:@${DB_SERVER}/xe
+    #      username: system
+    #      password: oracle
+  #url: jdbc:postgresql://172.18.0.2/twitter_postgres
+
+logging:
+  level:
+    root: INFO
+    com.example.TwitterApi: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasciBinder: TRACE
+
+#    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+#    org.hibernate.type.EnumType: TRACE
+
+

@@ -1,0 +1,104 @@
+version: '2.2'
+services:
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+  kafka:
+    build: .
+    container_name: twitter-kafka
+    ports:
+      - "9092"
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: localhost
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  twitter-oracle:
+    image: "truevoly/oracle-12c"
+    container_name: twitter-oracle
+    cpuset: "1"
+    volumes:
+      - twitter-data:/var/lib/oracle/data
+    ports:
+      - 1521:1521
+    environment:
+      - ORACLE_DB= twitter
+      - ORACLE_USER= system
+      - ORACLE_PASSWORD= oracle
+  twitter-postgres:
+    image: "postgres"
+    container_name: twitter-postgres
+    cpuset: "2,3"
+    volumes:
+      - db_vol:/var/lib/postgresql/data
+    ports:
+      - 5555:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=twitter_postgres
+    networks:
+      - twitter_network_7
+  twitter-app-3:
+    build: .
+    container_name: twitter-app-3
+    cpuset: "0"
+    environment:
+      #- DB_SERVER= twitter-oracle
+      - DB_SERVER= twitter-postgres
+      - SPRING_PROFILES_ACTIVE= oracle
+      - SERVER_PORT = 8110
+    #entrypoint: ["./wait-for-it.sh","twitter-oracle:1521","--timeout=0","--strict", "--", "java", "-jar","app.jar" ]
+    ports:
+      - 9010:9010
+      - 8110:8110
+    links:
+      - twitter-postgres
+    networks:
+      - twitter_network_7
+  prometheus:
+    image: prom/prometheus:v2.24.1
+    container_name: 'prometheus'
+    cpuset: "3"
+    volumes:
+      - ./monitoring/prometheus/:/etc/prometheus/
+    ports:
+      - '9090:9090'
+    networks:
+      - twitter_network_7
+  grafana:
+    image: grafana/grafana:5.4.3
+    container_name: 'grafana'
+    cpuset: "3"
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./monitoring/grafana/provisioning/:/etc/grafana/provisioning/
+    env_file:
+      - ./monitoring/grafana/config.monitoring
+    depends_on:
+      - prometheus
+    networks:
+      - twitter_network_7
+  db_exporter:
+    image: iamseth/oracledb_exporter:alpine
+    container_name: 'db_exporter'
+    ports:
+      - '9161:9161'
+    environment:
+      - DATA_SOURCE_NAME= system/oracle@twitter-oracle/xe
+      - ORACLE_USER= system
+      - ORACLE_PASSWORD= oracle
+    links:
+      - twitter-oracle
+
+volumes:
+  twitter-data:
+  db_vol:
+    external:
+      name: "postgres-v12"
+networks:
+  twitter_network_7:
+    driver: bridge
